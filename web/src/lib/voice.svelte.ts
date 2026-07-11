@@ -1,4 +1,4 @@
-import { Room, RoomEvent, Track, type Participant, type TrackPublication } from 'livekit-client';
+import { Room, RoomEvent, Track, type Participant } from 'livekit-client';
 
 export class VoiceClient {
   #room: Room | null = null;
@@ -47,10 +47,18 @@ export class VoiceClient {
       this.canPlaybackAudio = room.canPlaybackAudio;
     });
 
-    // 當有 remote audio track 被訂閱時，嘗試播放（初始 startAudio 可能空跑）
-    room.on(RoomEvent.TrackSubscribed, (track: any) => {
+    // Attach remote audio to DOM + resume AudioContext
+    room.on(RoomEvent.TrackSubscribed, (track: Track) => {
       if (track.kind === Track.Kind.Audio) {
+        track.attach();
         this.startAudio();
+      }
+    });
+
+    // Detach audio elements when remote participant's track goes away
+    room.on(RoomEvent.TrackUnsubscribed, (track: Track) => {
+      if (track.kind === Track.Kind.Audio) {
+        track.detach();
       }
     });
 
@@ -66,7 +74,7 @@ export class VoiceClient {
       this.#room = room;
       this.canPlaybackAudio = room.canPlaybackAudio;
 
-      // 預設開啟麥克風（AudioContext 由 user gesture 喚醒）
+      // Enable mic by default (AudioContext must be unlocked by user gesture)
       await room.localParticipant.setMicrophoneEnabled(true).catch(() => {});
       this.micEnabled = true;
     } catch (e) {

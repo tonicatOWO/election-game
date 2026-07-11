@@ -9,15 +9,16 @@ import { setFsmFinalizer, setFsmNotifier } from './game/fsm';
 
 const app = new Hono();
 
-app.on(['GET', 'POST'], '/api/auth/*', (c) => auth.handler(c.req.raw));
-app.route('/api/rooms', roomsRoute);
-app.get('/healthz', (c) => c.json({ ok: true }));
+app.on(['GET', 'POST'], `${env.apiPrefix}/auth/*`, (c) => auth.handler(c.req.raw));
+app.route(`${env.apiPrefix}/rooms`, roomsRoute);
+app.get(env.healthPath, (c) => c.json({ ok: true }));
 
 const server = Bun.serve<WsData>({
+  hostname: env.host,
   port: env.port,
   async fetch(req, server) {
     const url = new URL(req.url);
-    if (url.pathname === '/ws') {
+    if (url.pathname === env.wsPath) {
       const session = await getSession(req.headers);
       if (!session) return new Response('unauthorized', { status: 401 });
 
@@ -41,4 +42,4 @@ const server = Bun.serve<WsData>({
 setPublisher(server);
 setFsmNotifier(broadcast);
 setFsmFinalizer(closeRoom);
-console.log(`Campaign Sim server listening on http://localhost:${server.port}`);
+console.log(`Campaign Sim server listening on http://${env.host}:${server.port}`);

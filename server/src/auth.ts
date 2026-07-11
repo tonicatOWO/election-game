@@ -14,13 +14,19 @@ const socialProviders =
       }
     : {};
 
+// Default trusted origins: BASE_URL, common dev ports, plus .env TRUSTED_ORIGINS
+const defaultOrigins = [
+  env.baseUrl,
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+];
+
 export const auth = betterAuth({
   baseURL: env.baseUrl,
   secret: env.betterAuthSecret,
   trustedOrigins: [
-    env.baseUrl,
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
+    ...defaultOrigins,
+    ...env.trustedOrigins,
   ],
   database: drizzleAdapter(db, {
     provider: 'sqlite',

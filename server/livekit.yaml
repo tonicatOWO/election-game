@@ -1,5 +1,5 @@
-# LiveKit SFU 設定 — development
-# 正式環境請更換 key/secret 並啟用 TLS
+# LiveKit SFU config — development
+# For production: replace key/secret and enable TLS
 port: 7880
 log_level: debug
 

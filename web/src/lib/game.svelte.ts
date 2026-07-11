@@ -30,7 +30,8 @@ export class GameClient {
     this.voiceToken = voiceOpts?.voiceToken ?? null;
 
     const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-    this.#ws = new WebSocket(`${protocol}://${location.host}/ws?room=${roomId}`);
+    const wsPath = import.meta.env.VITE_WS_PATH ?? '/ws';
+    this.#ws = new WebSocket(`${protocol}://${location.host}${wsPath}?room=${roomId}`);
     this.#ws.onopen = () => {
       this.connected = true;
       this.lastError = null;
