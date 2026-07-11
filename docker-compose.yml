@@ -16,7 +16,7 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "80:80"
+      - "8080:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - web-dist:/usr/share/nginx/html:ro
@@ -34,8 +34,9 @@ services:
       dockerfile: Dockerfile
     env_file: ./server/.env
     environment:
-      # Public URL for better-auth callbacks
-      - BASE_URL=http://localhost
+      # Public URL for better-auth callbacks & origin validation
+      - BASE_URL=http://localhost:8080
+      - TRUSTED_ORIGINS=http://localhost:8080
       # LiveKit reachable from browser
       - LIVEKIT_WS_URL=ws://localhost:7880
     volumes:

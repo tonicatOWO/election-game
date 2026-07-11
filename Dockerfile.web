@@ -5,8 +5,11 @@ FROM oven/bun:latest AS web-builder
 
 WORKDIR /app
 
+# All workspace package.json needed for workspace resolution
 COPY package.json bun.lock ./
+COPY tsconfig.json ./
 COPY shared/package.json ./shared/
+COPY server/package.json ./server/
 COPY web/package.json ./web/
 
 RUN bun install --frozen-lockfile
