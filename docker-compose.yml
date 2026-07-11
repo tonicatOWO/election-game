@@ -12,58 +12,58 @@
 # For voice, browser must reach LIVEKIT_WS_URL (adjust .env).
 
 services:
-  # ── Reverse proxy (single entry point) ────────────
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "8080:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - web-dist:/usr/share/nginx/html:ro
-    depends_on:
-      web-builder:
-        condition: service_completed_successfully
-      server:
-        condition: service_started
-    restart: unless-stopped
+        # ── Reverse proxy (single entry point) ────────────
+        nginx:
+                image: nginx:alpine
+                ports:
+                        - "9527:80"
+                volumes:
+                        - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+                        - web-dist:/usr/share/nginx/html:ro
+                depends_on:
+                        web-builder:
+                                condition: service_completed_successfully
+                        server:
+                                condition: service_started
+                restart: unless-stopped
 
-  # ── Hono + WebSocket backend ──────────────────────
-  server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    environment:
-      # Public URL for better-auth callbacks & origin validation
-      - BASE_URL=http://localhost:8080
-      - TRUSTED_ORIGINS=http://localhost:8080
-      # LiveKit reachable from browser
-      - LIVEKIT_WS_URL=ws://localhost:7880
-    volumes:
-      - server-data:/app/server/data
-    depends_on:
-      - livekit
-    restart: unless-stopped
+        # ── Hono + WebSocket backend ──────────────────────
+        server:
+                build:
+                        context: .
+                        dockerfile: Dockerfile
+                environment:
+                        # Public URL for better-auth callbacks & origin validation
+                        - BASE_URL=http://localhost:8080
+                        - TRUSTED_ORIGINS=http://localhost:8080
+                        # LiveKit reachable from browser
+                        - LIVEKIT_WS_URL=ws://localhost:7880
+                volumes:
+                        - server-data:/app/server/data
+                depends_on:
+                        - livekit
+                restart: unless-stopped
 
-  # ── Voice SFU (optional, skip if voice not needed) ─
-  livekit:
-    image: livekit/livekit-server:latest
-    container_name: campaign-livekit
-    volumes:
-      - ./server/livekit.yaml:/etc/livekit.yaml:ro
-    command: ["--config", "/etc/livekit.yaml"]
-    ports:
-      - "7880:7880"
-      - "7881:7881"
-    restart: unless-stopped
+        # ── Voice SFU (optional, skip if voice not needed) ─
+        livekit:
+                image: livekit/livekit-server:latest
+                container_name: campaign-livekit
+                volumes:
+                        - ./server/livekit.yaml:/etc/livekit.yaml:ro
+                command: ["--config", "/etc/livekit.yaml"]
+                ports:
+                        - "7880:7880"
+                        - "7881:7881"
+                restart: unless-stopped
 
-  # ── Ephemeral: build Svelte SPA ───────────────────
-  web-builder:
-    build:
-      context: .
-      dockerfile: Dockerfile.web
-    volumes:
-      - web-dist:/app/web/dist
+        # ── Ephemeral: build Svelte SPA ───────────────────
+        web-builder:
+                build:
+                        context: .
+                        dockerfile: Dockerfile.web
+                volumes:
+                        - web-dist:/app/web/dist
 
 volumes:
-  web-dist:
-  server-data:
+        web-dist:
+        server-data:
