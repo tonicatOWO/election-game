@@ -1,0 +1,20 @@
+{
+  "name": "campaign-sim",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "shared",
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev": "bun --filter web dev",
+    "dev:server": "bun --filter server dev",
+    "dev:web": "bun --filter web dev",
+    "check": "bun --filter '*' check",
+    "build": "bun --filter '*' build"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}

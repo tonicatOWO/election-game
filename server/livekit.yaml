@@ -1,0 +1,13 @@
+# LiveKit SFU 設定 — development
+# 正式環境請更換 key/secret 並啟用 TLS
+port: 7880
+log_level: debug
+
+rtc:
+  tcp_port: 7881
+  port_range_start: 7882
+  port_range_end: 7890
+  use_external_ip: false
+
+keys:
+  devkey: devsecret

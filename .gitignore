@@ -1,0 +1,11 @@
+node_modules/
+.bun-tmp/
+.omo/
+
+*.tsbuildinfo
+
+web/dist/
+server/data/
+
+.env
+.env.*

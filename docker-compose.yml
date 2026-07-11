@@ -1,0 +1,14 @@
+# election-game 開發基礎設施
+# - LiveKit SFU（即時語音）
+# 注意：app server (Hono) + web (Vite) 透過 bun dev 在本機跑
+services:
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: livekit-dev
+    network_mode: host
+    restart: unless-stopped
+    command:
+      - --keys
+      - devkey: devsecret
+      - --node-ip
+      - 0.0.0.0
