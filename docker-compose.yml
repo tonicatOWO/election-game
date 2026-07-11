@@ -1,14 +1,69 @@
-# election-game dev infrastructure
-# - LiveKit SFU (real-time voice)
-# Note: app server (Hono) + web (Vite) run via bun dev locally
+# Campaign Sim — production stack
+# Single entry point: nginx on port 80
+# Routes:
+#   /        → Svelte SPA (served by nginx)
+#   /api/*   → Hono backend (proxied)
+#   /ws      → Hono WebSocket (proxied)
+#
+# Usage:
+#   docker compose up -d
+#
+# Voice (LiveKit) is optional. Without it, the game runs normally.
+# For voice, browser must reach LIVEKIT_WS_URL (adjust .env).
+
 services:
+  # ── Reverse proxy (single entry point) ────────────
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - web-dist:/usr/share/nginx/html:ro
+    depends_on:
+      web-builder:
+        condition: service_completed_successfully
+      server:
+        condition: service_started
+    restart: unless-stopped
+
+  # ── Hono + WebSocket backend ──────────────────────
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: ./server/.env
+    environment:
+      # Public URL for better-auth callbacks
+      - BASE_URL=http://localhost
+      # LiveKit reachable from browser
+      - LIVEKIT_WS_URL=ws://localhost:7880
+    volumes:
+      - server-data:/app/server/data
+    depends_on:
+      - livekit
+    restart: unless-stopped
+
+  # ── Voice SFU (optional, skip if voice not needed) ─
   livekit:
     image: livekit/livekit-server:latest
-    container_name: livekit-dev
-    network_mode: host
-    restart: unless-stopped
+    container_name: campaign-livekit
     volumes:
       - ./server/livekit.yaml:/etc/livekit.yaml:ro
-    command:
-      - --config
-      - /etc/livekit.yaml
+    command: ["--config", "/etc/livekit.yaml"]
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+    restart: unless-stopped
+
+  # ── Ephemeral: build Svelte SPA ───────────────────
+  web-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    volumes:
+      - web-dist:/app/web/dist
+
+volumes:
+  web-dist:
+  server-data:
