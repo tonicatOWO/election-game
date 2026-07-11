@@ -32,7 +32,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    env_file: ./server/.env
     environment:
       # Public URL for better-auth callbacks & origin validation
       - BASE_URL=http://localhost:8080
